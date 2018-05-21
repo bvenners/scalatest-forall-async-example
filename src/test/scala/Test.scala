@@ -1,6 +1,6 @@
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.{Arbitrary, Gen, Shrink}
 import org.scalatest._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.prop.{Generator, GeneratorDrivenPropertyChecks}
 
 import scala.concurrent.Future
 
@@ -8,6 +8,9 @@ case class CustomInt(value: Int) extends AnyVal
 
 class Test extends AsyncWordSpec with Matchers with GeneratorDrivenPropertyChecks {
   implicit lazy val customIntGen: Gen[CustomInt] = Arbitrary.arbInt.arbitrary.map(CustomInt.apply)
+
+  implicit def convert[T](gen: Gen[T])(implicit shr: Shrink[T]): Generator[T] =
+    Generator.scalaCheckArbitaryGenerator(Arbitrary(gen), shr)
 
   "do" should {
     "Some condition" in {
